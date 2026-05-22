@@ -3,7 +3,7 @@ let pokemonDatabase = [];
 let checkedState = {}; // maps pokeId (number) -> boolean
 let activeGen = "1";
 let activeType = null;
-let currentTheme = "dark";
+let currentTheme = "light";
 let storageMode = "local"; // 'local' or 'sheets'
 let appsScriptUrl = "";
 
@@ -328,7 +328,7 @@ async function initializeGoogleSheet() {
 // ----------------------------------------------------
 function loadLocalState() {
   // Load Theme
-  currentTheme = localStorage.getItem("pokemon-theme") || "dark";
+  currentTheme = localStorage.getItem("pokemon-theme") || "light";
   document.body.setAttribute("data-theme", currentTheme);
   updateThemeIcons();
 
