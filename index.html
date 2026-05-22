@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gotta Check 'Em All! - Pokémon Master Checklist</title>
+  <meta name="description" content="A premium, dark-themed master checklist for tracking all 1025 Pokémon across Generations 1-9, integrated with Google Sheets as a database.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Confetti Canvas for Check Mark Celebrations -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Sticky Navbar Header -->
+  <header>
+    <div class="header-container">
+      <div class="header-top">
+        <div class="brand-section">
+          <div class="brand-icon"></div>
+          <h1>Gotta Check 'Em All!</h1>
+        </div>
+        
+        <div class="header-actions">
+          <!-- Sync Status Indicator -->
+          <div id="sync-indicator" class="sync-status" title="Sync Status">
+            <span class="sync-dot"></span>
+            <span id="sync-text">Offline Mode</span>
+          </div>
+
+          <!-- Theme Toggle Button -->
+          <button id="theme-toggle-btn" class="btn btn-circle" aria-label="Toggle Light/Dark Theme">
+            <svg id="theme-sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>
+            <svg id="theme-moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </button>
+
+          <!-- Settings Button -->
+          <button id="settings-btn" class="btn" aria-label="Database Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            Settings
+          </button>
+        </div>
+      </div>
+
+      <!-- Overall Checklist Progress Stats -->
+      <div class="stats-banner">
+        <div class="main-progress-container">
+          <div class="progress-info">
+            <span>Overall Progress</span>
+            <span id="progress-percent">0%</span>
+          </div>
+          <div class="progress-track">
+            <div id="progress-bar" class="progress-bar"></div>
+          </div>
+        </div>
+        
+        <div class="counter-metric">
+          <div id="checked-count" class="counter-num">0</div>
+          <div class="counter-label">Caught</div>
+        </div>
+        
+        <div class="counter-metric">
+          <div id="total-count" class="counter-num">1025</div>
+          <div class="counter-label">Total</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Dashboard -->
+  <main>
+    <!-- Search and Quick Filter Utilities -->
+    <div class="search-filter-section">
+      <div class="search-box-wrapper">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="search-input" class="search-input" placeholder="Search by name or national dex number (e.g. 25 or Pikachu)..." aria-label="Search Pokémon">
+      </div>
+      <div class="filter-actions">
+        <!-- Quick Filter Checked Status -->
+        <select id="status-filter" class="btn" style="height: 48px;" aria-label="Filter by caught status">
+          <option value="all">Show All</option>
+          <option value="caught">Show Caught Only</option>
+          <option value="uncaught">Show Uncaught Only</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Generational Nav tabs -->
+    <div class="tabs-container" id="gen-tabs-container">
+      <button class="tab-btn active" data-gen="1">Gen 1 <span class="tab-progress" id="gen1-prog">(0/151)</span></button>
+      <button class="tab-btn" data-gen="2">Gen 2 <span class="tab-progress" id="gen2-prog">(0/100)</span></button>
+      <button class="tab-btn" data-gen="3">Gen 3 <span class="tab-progress" id="gen3-prog">(0/135)</span></button>
+      <button class="tab-btn" data-gen="4">Gen 4 <span class="tab-progress" id="gen4-prog">(0/107)</span></button>
+      <button class="tab-btn" data-gen="5">Gen 5 <span class="tab-progress" id="gen5-prog">(0/156)</span></button>
+      <button class="tab-btn" data-gen="6">Gen 6 <span class="tab-progress" id="gen6-prog">(0/72)</span></button>
+      <button class="tab-btn" data-gen="7">Gen 7 <span class="tab-progress" id="gen7-prog">(0/88)</span></button>
+      <button class="tab-btn" data-gen="8">Gen 8 <span class="tab-progress" id="gen8-prog">(0/96)</span></button>
+      <button class="tab-btn" data-gen="9">Gen 9 <span class="tab-progress" id="gen9-prog">(0/120)</span></button>
+      <button class="tab-btn" data-gen="all">All Gens <span class="tab-progress" id="genall-prog">(0/1025)</span></button>
+    </div>
+
+    <!-- Pokémon Type Filters Dashboard -->
+    <div class="types-filter-wrapper" id="types-filter-container">
+      <!-- Type pills will be injected dynamically -->
+    </div>
+
+    <!-- Pokémon Grid Container -->
+    <section class="pokemon-grid" id="pokemon-grid" aria-live="polite">
+      <!-- Pokémon cards will be injected dynamically -->
+    </section>
+  </main>
+
+  <!-- Settings dialog Modal -->
+  <dialog id="settings-dialog">
+    <div class="modal-header">
+      <h2 class="modal-title">Database & Sync Settings</h2>
+      <button id="close-settings-btn" class="btn btn-circle" aria-label="Close settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Mode Toggle -->
+      <div class="form-group">
+        <label for="storage-mode">Sync Mode</label>
+        <select id="storage-mode">
+          <option value="local">Local Only (LocalStorage)</option>
+          <option value="sheets">Google Sheets Sync</option>
+        </select>
+      </div>
+
+      <!-- Google Sheets Fields -->
+      <div id="sheets-config-group" style="display: none; flex-direction: column; gap: 18px;">
+        <div class="form-group">
+          <label for="apps-script-url">Google Apps Script Web App URL</label>
+          <input type="url" id="apps-script-url" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+
+        <div class="form-info-box">
+          <strong>How to connect Google Sheets:</strong>
+          <ol style="margin-left: 18px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+            <li>Create a new, blank Google Sheet.</li>
+            <li>Go to <strong>Extensions > Apps Script</strong>.</li>
+            <li>Copy and paste the code from <a href="GoogleAppsScript.js" target="_blank" style="color: var(--primary);">GoogleAppsScript.js</a>.</li>
+            <li>Click <strong>Deploy > New deployment</strong>. Select <strong>Web app</strong>.</li>
+            <li>Configure: Execute as = "Me", Who has access = "Anyone".</li>
+            <li>Deploy, authorize permissions, copy the Web App URL and paste it above.</li>
+          </ol>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 0; justify-content: space-between;">
+          <button id="initialize-sheet-btn" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Initialize/Format Sheet
+          </button>
+          
+          <button id="manual-sync-btn" class="btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M16 3h5v5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 21H3v-5"/></svg>
+            Sync Now
+          </button>
+        </div>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid var(--panel-border); margin: 10px 0;">
+
+      <!-- Local Storage Utilities -->
+      <div class="form-group">
+        <label>Backup and Restore (Local Data)</label>
+        <div style="display: flex; gap: 12px; margin-top: 6px;">
+          <button id="export-btn" class="btn" style="flex: 1;">Export Checklist JSON</button>
+          <button id="import-btn" class="btn" style="flex: 1;">Import Checklist JSON</button>
+          <input type="file" id="import-file-input" style="display: none;" accept=".json">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 10px;">
+        <button id="clear-all-btn" class="btn" style="border-color: var(--danger); color: var(--danger);">
+          Clear All Caught Progress
+        </button>
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button id="save-settings-btn" class="btn btn-primary">Save & Apply</button>
+    </div>
+  </dialog>
+
+  <!-- Toast system for notifications -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>
